@@ -1,5 +1,7 @@
 package com.techelevator.projects.model;
 
+import org.springframework.jdbc.support.rowset.SqlRowSet;
+
 import java.time.LocalDate;
 
 public class Project {
@@ -46,4 +48,20 @@ public class Project {
 	public String toString() {
 		return name;
 	}
+
+	public Project mapRowToProject(SqlRowSet results) {
+		Project project = new Project();
+
+		project.setId(results.getLong("project_id"));
+		project.setName(results.getString("name"));
+		return project;
+	}
+
 }
+//public Department mapRowToDepartment(SqlRowSet results) {
+//		Department department = new Department();
+//
+//		department.setId(results.getLong("department_id"));
+//		department.setName(results.getString("name"));
+//
+//		return department;

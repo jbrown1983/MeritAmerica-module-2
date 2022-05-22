@@ -9,11 +9,10 @@ public interface ProjectDao {
 	/**
 	 * Get a project from the datastore that has the given id.
 	 * If the id is not found, return null.
-	 *
 	 * @param projectId the id of the project to get from the datastore
 	 * @return a filled out project object
 	 */
-	public Project getProject(Long projectId);
+	public Long getProject(Long projectId);
 
 	/**
 	 * Get a list of all projects.
@@ -28,7 +27,7 @@ public interface ProjectDao {
 	 * @param newProject the project object to insert
 	 * @return the project object with its new id filled in
 	 */
-	public Project createProject(Project newProject);
+	public Long createProject(Project newProject);
 
 	/**
 	 * Removes a project from the datastore, which requires deleting

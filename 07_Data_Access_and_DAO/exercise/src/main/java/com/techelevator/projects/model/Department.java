@@ -1,5 +1,7 @@
 package com.techelevator.projects.model;
 
+import org.springframework.jdbc.support.rowset.SqlRowSet;
+
 public class Department {
 
 	private Long id;
@@ -31,5 +33,14 @@ public class Department {
 	@Override
 	public String toString() {
 		return this.name;
+	}
+
+	 public Department mapRowToDepartment(SqlRowSet results) {
+		Department department = new Department();
+
+		department.setId(results.getLong("department_id"));
+		department.setName(results.getString("name"));
+
+		return department;
 	}
 }
