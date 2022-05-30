@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping
+@RequestMapping ("/auctions")
+
 public class AuctionController {
     private AuctionDao dao;
 
@@ -17,37 +18,38 @@ public class AuctionController {
     }
 
     //Step Two: Implement the list() method
-    @RequestMapping(path = "/auctions", method = RequestMethod.GET)
-    public List<Auction> list() {
-        return dao.list();
-    }
-
-
-    //Step Three: Implement the get() action
-    @RequestMapping(path = "/auctions/{id}", method = RequestMethod.GET)
-    public Auction get(@PathVariable int id) {
-        return dao.get(id);
-    }
-
-    //Step Four: Implement the create() action
-    @RequestMapping(value = "/auctions", method = RequestMethod.POST)
-    public Auction create(@RequestBody Auction auction) {
-        if (auction != null) {
-            dao.create(auction);
-            return auction;
-        }
-        return null;
-    }
-
-    //Step Five: Step Five: Add searching by title
-    @RequestMapping(path = "/auctions/title", method = RequestMethod.GET)
-    public List<Auction> list2(@RequestParam(defaultValue = "/auctions/title") String title_like) {
-        if (!title_like.equals("/auctions/title")) {
+    //Step 5,6,7
+    @RequestMapping(method = RequestMethod.GET)
+    public List<Auction> list(@RequestParam(defaultValue = "") String title_like, @RequestParam(defaultValue = "0") double currentBid_lte) {
+        if (!title_like.equals("") && currentBid_lte != 0) {
+            return dao.searchByTitleAndPrice(title_like, currentBid_lte);
+        } else if (currentBid_lte == 0 && !title_like.equals("")) {
             return dao.searchByTitle(title_like);
-        } else {
+        } else if (currentBid_lte != 0 && title_like.equals("")) {
+            return dao.searchByPrice(currentBid_lte);
+        } else return dao.list();
+    }
+        //Step Three: Implement the get() action
+        @RequestMapping(path = "/{id}", method = RequestMethod.GET)
+        public Auction get ( @PathVariable int id){
+            return dao.get(id);
+        }
+
+        //Step Four: Implement the create() action
+        @RequestMapping(path = "", method = RequestMethod.POST)
+        public Auction create (@RequestBody Auction auction){
+            if (auction != null) {
+                dao.create(auction);
+                return auction;
+            }
             return null;
         }
 
 
     }
-}
+
+
+
+
+
+
