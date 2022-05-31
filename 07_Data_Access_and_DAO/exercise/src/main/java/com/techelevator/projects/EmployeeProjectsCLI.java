@@ -1,51 +1,44 @@
 package com.techelevator.projects;
 
+import com.techelevator.projects.dao.*;
+import com.techelevator.projects.model.Department;
+import com.techelevator.projects.model.Employee;
+import com.techelevator.projects.model.Project;
+import com.techelevator.projects.view.Menu;
+import org.apache.commons.dbcp2.BasicDataSource;
+
+import javax.sql.DataSource;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
 
-import org.apache.commons.dbcp2.BasicDataSource;
-
-import com.techelevator.projects.model.Department;
-import com.techelevator.projects.dao.DepartmentDao;
-import com.techelevator.projects.model.Employee;
-import com.techelevator.projects.dao.EmployeeDao;
-import com.techelevator.projects.model.Project;
-import com.techelevator.projects.dao.ProjectDao;
-import com.techelevator.projects.dao.JdbcDepartmentDao;
-import com.techelevator.projects.dao.JdbcEmployeeDao;
-import com.techelevator.projects.dao.JdbcProjectDao;
-import com.techelevator.projects.view.Menu;
-
-import javax.sql.DataSource;
-
 public class EmployeeProjectsCLI {
-	
+
 	private static final String MAIN_MENU_OPTION_EMPLOYEES = "Employees";
 	private static final String MAIN_MENU_OPTION_DEPARTMENTS = "Departments";
 	private static final String MAIN_MENU_OPTION_PROJECTS = "Projects";
 	private static final String MAIN_MENU_OPTION_EXIT = "Exit";
-	private static final String[] MAIN_MENU_OPTIONS = new String[] { MAIN_MENU_OPTION_DEPARTMENTS, 
-																	 MAIN_MENU_OPTION_EMPLOYEES, 
-																	 MAIN_MENU_OPTION_PROJECTS, 
-																	 MAIN_MENU_OPTION_EXIT };
+	private static final String[] MAIN_MENU_OPTIONS = new String[] { MAIN_MENU_OPTION_DEPARTMENTS,
+			MAIN_MENU_OPTION_EMPLOYEES,
+			MAIN_MENU_OPTION_PROJECTS,
+			MAIN_MENU_OPTION_EXIT };
 
 	private static final String MENU_OPTION_RETURN_TO_MAIN = "Return to main menu";
 
 	private static final String DEPT_MENU_OPTION_ALL_DEPARTMENTS = "Show all departments";
 	private static final String DEPT_MENU_OPTION_UPDATE_NAME = "Update department name";
 	private static final String[] DEPARTMENT_MENU_OPTIONS = new String[] { DEPT_MENU_OPTION_ALL_DEPARTMENTS,
-																		   DEPT_MENU_OPTION_UPDATE_NAME,
-																		   MENU_OPTION_RETURN_TO_MAIN};
-	
+			DEPT_MENU_OPTION_UPDATE_NAME,
+			MENU_OPTION_RETURN_TO_MAIN};
+
 	private static final String EMPL_MENU_OPTION_ALL_EMPLOYEES = "Show all employees";
 	private static final String EMPL_MENU_OPTION_SEARCH_BY_NAME = "Employee search by name";
 	private static final String EMPL_MENU_OPTION_EMPLOYEES_NO_PROJECTS = "Show employees without projects";
 	private static final String[] EMPL_MENU_OPTIONS = new String[] { EMPL_MENU_OPTION_ALL_EMPLOYEES,
-																	 EMPL_MENU_OPTION_SEARCH_BY_NAME,
-																	 EMPL_MENU_OPTION_EMPLOYEES_NO_PROJECTS,
-																	 MENU_OPTION_RETURN_TO_MAIN};
-	
+			EMPL_MENU_OPTION_SEARCH_BY_NAME,
+			EMPL_MENU_OPTION_EMPLOYEES_NO_PROJECTS,
+			MENU_OPTION_RETURN_TO_MAIN};
+
 	private static final String PROJ_MENU_OPTION_ACTIVE_PROJECTS = "Show all projects";
 	private static final String PROJ_MENU_OPTION_ADD_PROJECT = "Add new project";
 	private static final String PROJ_MENU_OPTION_PROJECT_EMPLOYEES = "Show project employees";
@@ -53,18 +46,18 @@ public class EmployeeProjectsCLI {
 	private static final String PROJ_MENU_OPTION_REMOVE_EMPLOYEE_FROM_PROJECT = "Remove employee from project";
 	private static final String PROJ_MENU_OPTION_DELETE_PROJECT = "Delete project";
 	private static final String[] PROJ_MENU_OPTIONS = new String[] { PROJ_MENU_OPTION_ACTIVE_PROJECTS,
-																	 PROJ_MENU_OPTION_ADD_PROJECT,
-																	 PROJ_MENU_OPTION_PROJECT_EMPLOYEES,
-																	 PROJ_MENU_OPTION_ASSIGN_EMPLOYEE_TO_PROJECT,
-																	 PROJ_MENU_OPTION_REMOVE_EMPLOYEE_FROM_PROJECT,
-																	 PROJ_MENU_OPTION_DELETE_PROJECT,
-																	 MENU_OPTION_RETURN_TO_MAIN };
-	
+			PROJ_MENU_OPTION_ADD_PROJECT,
+			PROJ_MENU_OPTION_PROJECT_EMPLOYEES,
+			PROJ_MENU_OPTION_ASSIGN_EMPLOYEE_TO_PROJECT,
+			PROJ_MENU_OPTION_REMOVE_EMPLOYEE_FROM_PROJECT,
+			PROJ_MENU_OPTION_DELETE_PROJECT,
+			MENU_OPTION_RETURN_TO_MAIN };
+
 	private final Menu menu;
 	private final DepartmentDao departmentDao;
 	private final EmployeeDao employeeDao;
 	private final ProjectDao projectDao;
-	
+
 	public static void main(String[] args) {
 		BasicDataSource dataSource = new BasicDataSource();
 		dataSource.setUrl("jdbc:postgresql://localhost:5432/EmployeeProjects");
@@ -74,10 +67,10 @@ public class EmployeeProjectsCLI {
 		EmployeeProjectsCLI application = new EmployeeProjectsCLI(dataSource);
 		application.run();
 	}
-	
+
 	public EmployeeProjectsCLI(DataSource dataSource) {
 		this.menu = new Menu(System.in, System.out);
-		
+
 		departmentDao = new JdbcDepartmentDao(dataSource);
 		employeeDao = new JdbcEmployeeDao(dataSource);
 		projectDao = new JdbcProjectDao(dataSource);
@@ -108,7 +101,7 @@ public class EmployeeProjectsCLI {
 			handleListAllDepartments();
 		} else if(choice.equals(DEPT_MENU_OPTION_UPDATE_NAME)) {
 			handleUpdateDepartmentName();
-		} 
+		}
 	}
 
 	private void handleUpdateDepartmentName() {
@@ -227,9 +220,9 @@ public class EmployeeProjectsCLI {
 
 	private void handleEmployeeProjectRemoval() {
 		printHeading("Remove Employee From Project");
-		
+
 		Project selectedProject = getProjectSelectionFromUser();
-		
+
 		System.out.println("Choose an employee to remove:");
 		List<Employee> projectEmployees = employeeDao.getEmployeesByProjectId(selectedProject.getId());
 		if(projectEmployees.size() > 0) {
@@ -243,13 +236,13 @@ public class EmployeeProjectsCLI {
 
 	private void handleEmployeeProjectAssignment() {
 		printHeading("Assign Employee To Project");
-		
+
 		Project selectedProject = getProjectSelectionFromUser();
-		
+
 		System.out.println("Choose an employee to add:");
 		List<Employee> allEmployees = employeeDao.getAllEmployees();
 		Employee selectedEmployee = (Employee)menu.getChoiceFromOptions(allEmployees.toArray());
-		
+
 		employeeDao.addEmployeeToProject(selectedProject.getId(), selectedEmployee.getId());
 		System.out.println("\n*** "+selectedEmployee+" added to "+selectedProject+" ***");
 	}
@@ -261,7 +254,7 @@ public class EmployeeProjectsCLI {
 		projectDao.deleteProject(selectedProject.getId());
 		System.out.println("\n*** " + selectedProject.getName() + " deleted ***");
 	}
-	
+
 	private void handleProjectEmployeeList() {
 		Project selectedProject = getProjectSelectionFromUser();
 		List<Employee> projectEmployees = employeeDao.getEmployeesByProjectId(selectedProject.getId());
@@ -273,7 +266,7 @@ public class EmployeeProjectsCLI {
 		List<Project> allProjects = projectDao.getAllProjects();
 		return (Project)menu.getChoiceFromOptions(allProjects.toArray());
 	}
-	
+
 	private void listProjects(List<Project> projects) {
 		System.out.println();
 		if(projects.size() > 0) {
@@ -292,7 +285,7 @@ public class EmployeeProjectsCLI {
 		}
 		System.out.println();
 	}
-	
+
 	private String getUserInput(String prompt) {
 		System.out.print(prompt + " >>> ");
 		return new Scanner(System.in).nextLine();
@@ -310,3 +303,4 @@ public class EmployeeProjectsCLI {
 		System.out.println();
 	}
 }
+

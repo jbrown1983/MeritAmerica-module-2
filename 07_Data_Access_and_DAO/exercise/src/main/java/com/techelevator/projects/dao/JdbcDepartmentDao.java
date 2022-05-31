@@ -8,10 +8,9 @@ import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JdbcDepartmentDao implements DepartmentDao  {
-	
+public class JdbcDepartmentDao implements DepartmentDao {
+
 	private final JdbcTemplate jdbcTemplate;
-	private Department department;
 
 	public JdbcDepartmentDao(DataSource dataSource) {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
@@ -20,34 +19,40 @@ public class JdbcDepartmentDao implements DepartmentDao  {
 	@Override
 	public Department getDepartment(Long id) {
 		Department department = null;
-		String sqlGetDepartment = "SELECT department_id,name FROM department WHERE department_id = ?";
-		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetDepartment, id);
-
-		if(results.next()){
-			department = department.mapRowToDepartment(results);
+		String sql = "SELECT department_id, name FROM department WHERE department_id = ?;";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
+		if(results.next()) {
+			department = mapRowToDepartment(results);
 		}
-
-	return department;
+		return department;
 	}
 
 	@Override
 	public List<Department> getAllDepartments() {
-		List<Department> departmentList = new ArrayList<>();
-
-		String sqlGetALLDepartments = "SELECT department_id,name FROM department;";
-		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetALLDepartments);
-
-		while (results.next()){
-			departmentList.add(department.mapRowToDepartment(results));
+		List<Department> departments = new ArrayList<>();
+		String sql = "Select department_id, name FROM department;";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+		while (results.next()) {
+			departments.add(mapRowToDepartment(results));
 		}
-		return departmentList;
+		return departments;
 	}
+
 
 	@Override
 	public void updateDepartment(Department updatedDepartment) {
-	String updateDepartment = "UPDATE department SET name=? WHERE department_id=?";
-	jdbcTemplate.update(updateDepartment, updatedDepartment.getName(), updatedDepartment.getId());
+		String sql = "UPDATE department " +
+				"SET name = ? " +
+				"WHERE department_id = ?;";
+		jdbcTemplate.update(sql, updatedDepartment.getName(),updatedDepartment.getId());
 
+	}
+
+	private Department mapRowToDepartment(SqlRowSet rowSet) {
+		Department department = new Department();
+		department.setId(rowSet.getLong("department_id"));
+		department.setName(rowSet.getString("name"));
+		return department;
 	}
 
 }

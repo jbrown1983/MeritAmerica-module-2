@@ -16,57 +16,83 @@ public class JdbcProjectDao implements ProjectDao {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 
-
 	@Override
-	// * Get a project from the datastore that has the given id. * If the id is not found, return null.
-	//	* @param projectId the id of the project to get from the datastore *@return a filled out project object
-	public Long getProject(Long projectId) {
+	public Project getProject(Long projectId) {
 		Project project = null;
-		String sql = "SELECT project_id;";
-		SqlRowSet results = jdbcTemplate.queryForRowSet(String.valueOf(projectId));
+		String sql = "Select project_id, name, from_date, to_date " +
+				"FROM project " +
+				"WHERE project_id = ?;";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sql, projectId);
+
 		if (results.next()) {
-			project = project.mapRowToProject(results);
+			project = mapRowToProject(results);
 		}
-		return projectId;
+
+
+		return project;
 	}
 
 	@Override
-	//Get a list of all projects.
 	public List<Project> getAllProjects() {
-		List<Project> projectList = new ArrayList<>();
-		String sql = "SELECT project_id, name FROM project;";
+		List<Project> projects = new ArrayList<>();
+		String sql = "Select project_id, name, from_date, to_date " +
+				"FROM project;";
 		SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+		while (results.next()) {
 
-		while (results.next()){
-			projectList.add(projectList(results));
+			Project project = mapRowToProject(results);
+
+			projects.add(project);
+
 		}
-		return projectList;
+
+		return projects;
 	}
 
-
 	@Override
-	//Inserts a new project into the datastore.
-	public Long createProject(Project newProject) {
-		String sql = "INSERT INTO project (name, from_date,to_date) VALUSE (?,?,?,) RETURNING project_id;";
-		Long newId = jdbcTemplate.queryForObject(sql, Long.class, newProject.getName(), newProject.getFromDate(), newProject.getToDate());
-
-		return getProject(newId);
+	public Project createProject(Project newProject) {
+		String sql = "INSERT INTO project (name, from_date, to_date)" +
+				" VALUES (?, ?, ?) RETURNING project_id;";
+		Long newId = jdbcTemplate.queryForObject(sql,
+				Long.class,
+				newProject.getName(),
+				newProject.getFromDate(),
+				newProject.getToDate());
+		Project project = getProject(newId);
+		return project;
 	}
 
 	@Override
 	public void deleteProject(Long projectId) {
-	String deleteProjectSql = "DELETE FROM project WHERE project_id = ?;";
-	int numberOfRowsDeleted = jdbcTemplate.update(deleteProjectSql, projectId.getProjectId());
+		String sqlDeleteProjectEmployee  =
+				" DELETE FROM project_employee"+
+						" WHERE project_id = ?;";
 
-		deleteProjectSql = "DELETE FROM project WHERE project_id = ?;";
-	numberOfRowsDeleted = jdbcTemplate.update(deleteProjectSql, projectId.getProjectIId());
-		if (numberOfRowsDeleted == 1) {
-			System.out.println("Project was deleted");
-		}
-		else {
-			System.out.println("Project delete failed.");
+		String sqlDeleteTimeSheet =
+				" DELETE FROM timesheet"+
+						" WHERE project_id = ?;";
+
+		String sqlDelete = "DELETE FROM project" +
+				" WHERE project_id = ?;";
+
+		jdbcTemplate.update(sqlDeleteProjectEmployee, projectId);
+		jdbcTemplate.update(sqlDeleteTimeSheet, projectId);
+		jdbcTemplate.update(sqlDelete, projectId);
+
 	}
-	
 
-}
+	private Project mapRowToProject(SqlRowSet rowSet) {
+		Project project = new Project();
+		project.setId(rowSet.getLong("project_id"));
+		project.setName(rowSet.getString("name"));
+		if (rowSet.getDate("from_date") != null) {
+			project.setFromDate(rowSet.getDate("from_date").toLocalDate());
+		}
+		if(rowSet.getDate("to_date") != null) {
+			project.setToDate(rowSet.getDate("to_date").toLocalDate());
+		}
+		return project;
+	}
+
+
 }

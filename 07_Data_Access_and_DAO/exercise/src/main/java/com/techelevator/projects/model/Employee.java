@@ -1,7 +1,5 @@
 package com.techelevator.projects.model;
 
-import org.springframework.jdbc.support.rowset.SqlRowSet;
-
 import java.time.LocalDate;
 
 public class Employee {
@@ -64,16 +62,5 @@ public class Employee {
 	@Override
 	public String toString() {
 		return lastName + ", " + firstName;
-	}
-
-	public Employee mapRowToEmployee(SqlRowSet results) {
-		Employee employee = new Employee();
-
-		employee.setId(results.getLong("employee_id"));
-		employee.setFirstName(results.getString("first_Name"));
-		employee.setLastName(results.getString("last_Name"));
-
-
-		return employee;
 	}
 }

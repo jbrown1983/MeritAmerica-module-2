@@ -15,63 +15,95 @@ public class JdbcEmployeeDao implements EmployeeDao {
 	public JdbcEmployeeDao(DataSource dataSource) {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
-	
-	@Override
-	// Gets all employees from the datastore and returns them in a List
-	public List<Employee> getAllEmployees() {
-		String sqlGetAllEmployees = "SELECT employee_id, first_name, last_name FROM employee;";
-		SqlRowSet results = jdbcTemplate.queryForRowSet(getAllEmployess);
 
-		while (results.next()){
-			getAllEmployees.add(employee.mapRowToEmployee(results));
+	@Override
+	public List<Employee> getAllEmployees() {
+		List<Employee> employees = new ArrayList<>();
+		SqlRowSet results = jdbcTemplate.queryForRowSet(
+				"SELECT employee_id, department_id, first_name, last_name, birth_date, hire_date " +
+						"FROM employee;");
+		while (results.next())
+			employees.add(mapRowToEmployee(results));
+		return employees;
+	}
+
+	@Override
+	public List<Employee> searchEmployeesByName(String firstNameSearch, String lastNameSearch) {
+		List<Employee> employees = new ArrayList<>();
+		String sql = "SELECT employee_id, department_id, first_name, last_name, birth_date, hire_date " +
+				"FROM employee " +
+				"WHERE first_name ILIKE ? AND last_name ILIKE ?;";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sql, "%" + firstNameSearch + "%", "%" +lastNameSearch +"%");
+       /* if (firstNameSearch.isEmpty() && lastNameSearch.isEmpty()) {
+            employees.addAll(getAllEmployees());*/
+
+		while (results.next()) {
+			Employee employee = mapRowToEmployee(results);
+			employees.add(employee);
 		}
 
-		return getAllEmployees;
+		return employees;
 	}
-
-	//List<Department> departmentList = new ArrayList<>();
-	//
-	//		String sqlGetALLDepartments = "SELECT department_id,name FROM department;";
-	//		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetALLDepartments);
-	//
-	//		while (results.next()){
-	//			departmentList.add(department.mapRowToDepartment(results));
-	//		}
-	//		return departmentList;
-	//	}
-
 
 
 	@Override
-	// Find all employees whose names contain the search strings. Returned employees should
-	//	 * match both first and last name search strings. If a search string is blank,
-	//	 * ignore it. If both strings are blank, return all employees.
-	//	 * Be sure to use ILIKE for case-insensitive search matching!
-	public List<Employee> searchEmployeesByName(String firstNameSearch, String lastNameSearch) {
-		return List.of(new Employee());
-	}
-
-	@Override
-	// Get all of the employees that are on the project with the given id.
 	public List<Employee> getEmployeesByProjectId(Long projectId) {
-		return new ArrayList<>();
+		List<Employee> employees = new ArrayList<>();
+		String sql = "SELECT employee.employee_id, department_id, first_name, last_name, birth_date, hire_date " +
+				"FROM employee " +
+				"JOIN project_employee ON project_employee.employee_id = employee.employee_id " +
+				"WHERE project_employee.project_id = ?;";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sql, projectId);
+		while (results.next()) {
+			Employee employee = mapRowToEmployee(results);
+			employees.add(employee);
+		}
+		return employees;
+
+
 	}
 
 	@Override
-	// Assign an employee to a project
 	public void addEmployeeToProject(Long projectId, Long employeeId) {
+		String sql = "UPDATE project_employee " +
+				"SET project_id = ? " +
+				"WHERE employee_id = ?;";
+		jdbcTemplate.update(sql, projectId, employeeId);
+
+
 	}
 
 	@Override
-	//Unassign the employee from a project. Assign an employee to a project
 	public void removeEmployeeFromProject(Long projectId, Long employeeId) {
+		String sql = "DELETE FROM project_employee " +
+				"WHERE project_id = ? AND employee_id = ?;";
+		jdbcTemplate.update(sql, projectId, employeeId);
+
 	}
 
 	@Override
-	//* Get all of the employees that aren't assigned to any project.
-	//	 * @return all the employees not on a project as Employee objects in a List
 	public List<Employee> getEmployeesWithoutProjects() {
-		return new ArrayList<>();
+		List<Employee> employees = new ArrayList<>();
+		String sql = "SELECT employee.employee_id, department_id, first_name, last_name, birth_date, hire_date " +
+				"FROM employee " +
+				"WHERE employee_id NOT IN (SELECT DISTINCT employee_id FROM project_employee)";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+		while (results.next()) {
+			Employee employee = mapRowToEmployee(results);
+			employees.add(employee);
+		}
+		return employees;
+	}
+
+	private Employee mapRowToEmployee(SqlRowSet rowSet) {
+		Employee employee = new Employee();
+		employee.setId(rowSet.getLong("employee_id"));
+		employee.setDepartmentId(rowSet.getLong("department_id"));
+		employee.setFirstName(rowSet.getString("first_name"));
+		employee.setLastName(rowSet.getString("last_name"));
+		employee.setBirthDate(rowSet.getDate("birth_date").toLocalDate());
+		employee.setHireDate(rowSet.getDate("hire_date").toLocalDate());
+		return employee;
 	}
 
 
